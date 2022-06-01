@@ -1,7 +1,7 @@
 # -language-salary-collector
  
 This script created to collect programmer vacancies from [SuperJob](http://SuperJob.ru) and [HeadHunter](http://hh.ru) 
-and return table with average salaries, separated by programming languages
+and return table with average salaries, separated by programming languages. Vacancies searching in Moscow, Russia.
 
 Returned table looks like:
 
