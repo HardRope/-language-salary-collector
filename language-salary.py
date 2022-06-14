@@ -37,11 +37,13 @@ def collect_vacancies_sj(languages, app_id):
             response = requests.get(url, headers=auth, params=params)
             response.raise_for_status()
 
-            page_numbers = response.json()["total"] // 20 + 1
+            vacancies = response.json()
+
+            page_numbers = vacancies["total"] // 20 + 1
             page += 1
 
-            languages_vacancies[language]["items"].extend(response.json()["objects"])
-            languages_vacancies[language]["vacancies_found"] = response.json()["total"]
+            languages_vacancies[language]["items"].extend(vacancies["objects"])
+            languages_vacancies[language]["vacancies_found"] = vacancies["total"]
 
     return languages_vacancies
 
@@ -90,10 +92,12 @@ def collect_vacancies_hh(languages):
             response = requests.get(hh_url, params=params)
             response.raise_for_status()
 
-            languages_vacancies[language]["items"].extend(response.json()["items"])
-            languages_vacancies[language]["vacancies_found"] = response.json()["found"]
+            vacancies = response.json()
 
-            pages_number = response.json()["pages"]
+            languages_vacancies[language]["items"].extend(vacancies["items"])
+            languages_vacancies[language]["vacancies_found"] = vacancies["found"]
+
+            pages_number = vacancies["pages"]
             page += 1
 
     return languages_vacancies
