@@ -7,10 +7,10 @@ from terminaltables import AsciiTable
 
 
 
-def collect_vacancies_sj(languages):
+def collect_vacancies_sj(languages, app_id):
     auth = {
         "X-Api-App-Id":
-            os.getenv("X-Api-App-Id"),
+            app_id,
     }
     url = "https://api.superjob.ru/2.0/vacancies/"
 
@@ -166,8 +166,8 @@ def hh_get_salary_by_language(languages):
     return salary_by_languages
 
 
-def sj_get_salary_by_language(languages):
-    vacancies = collect_vacancies_sj(languages)
+def sj_get_salary_by_language(languages, app_id):
+    vacancies = collect_vacancies_sj(languages, app_id)
 
     salary_by_languages = {}
 
@@ -210,6 +210,7 @@ def create_table(title, packed_salaries, programming_languages):
 if __name__ == '__main__':
     load_dotenv()
 
+    sj_app_id = os.getenv("X-Api-App-Id")
     programming_languages = (
         "javascript",
         "java",
@@ -223,7 +224,7 @@ if __name__ == '__main__':
         "go",
     )
 
-    sj_programmer_salaries = sj_get_salary_by_language(programming_languages)
+    sj_programmer_salaries = sj_get_salary_by_language(programming_languages, sj_app_id)
     hh_programmer_salaries = hh_get_salary_by_language(programming_languages)
 
     print(create_table("HeadHunter Moscow", hh_programmer_salaries, programming_languages))
