@@ -43,4 +43,4 @@ C:\Users\...\python language_salary.py
 
 ## Project Goals
 
-The code is written for educational purposes on online-course for web-developers dvmn.org.
+The code is written for educational purposes on online-course for web-developers [dvmn.org](https://dvmn.org/).
