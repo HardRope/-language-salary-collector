@@ -29,7 +29,7 @@ def collect_vacancies_sj(languages):
             params = {
                 "town": '4',
                 "catalogue": 48,
-                "keyword": "программист " + language,
+                "keyword": f"программист {language}",
                 "count": 20,
                 "page": page,
             }
@@ -81,7 +81,7 @@ def collect_vacancies_hh(languages):
 
         while page < pages_number:
             params = {
-                "text": "программист " + language,
+                "text": f"программист {language}",
                 "period": 30,
                 "area": 1,
                 "page": page
