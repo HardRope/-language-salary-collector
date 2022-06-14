@@ -121,10 +121,10 @@ def get_rub_average_salaries(salaries):
         if salary["from"] and salary["to"]:
             average_salaries.append((salary["from"] + salary["to"]) / 2)
 
-        if not salary["from"] and salary["to"]:
+        elif not salary["from"]:
             average_salaries.append((salary["to"] * 0.8))
 
-        if salary["from"] and not salary["to"]:
+        elif not salary["to"]:
             average_salaries.append(salary["from"] * 1.2)
 
     return average_salaries
