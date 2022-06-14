@@ -203,8 +203,7 @@ def create_table(title, packed_salaries, programming_languages):
         )
         table_data.append(format)
 
-    TABLE_DATA = tuple(table_data)
-    table_instance = AsciiTable(TABLE_DATA, title)
+    table_instance = AsciiTable(table_data, title)
     return table_instance.table
 
 
