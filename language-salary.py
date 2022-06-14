@@ -1,7 +1,6 @@
 import os
 
 from dotenv import load_dotenv
-load_dotenv()
 
 import requests
 from terminaltables import AsciiTable
@@ -210,6 +209,8 @@ def create_table(title, packed_salaries, programming_languages):
 
 
 if __name__ == '__main__':
+    load_dotenv()
+
     programming_languages = (
         "javascript",
         "java",
