@@ -54,7 +54,7 @@ def get_salaries_sj(vacancies):
         salary_from = vacancy["payment_from"]
         salary_to = vacancy["payment_to"]
 
-        if salary_from == 0 and salary_to == 0:
+        if not salary_from and not salary_to:
             salaries.append(None)
             continue
 
