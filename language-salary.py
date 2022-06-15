@@ -5,133 +5,108 @@ from dotenv import load_dotenv
 import requests
 from terminaltables import AsciiTable
 
-
-
-def collect_vacancies_sj(languages, app_id):
+def collect_vacancies_sj(language, app_id):
     auth = {
         "X-Api-App-Id":
             app_id,
     }
     url = "https://api.superjob.ru/2.0/vacancies/"
 
-    languages_vacancies = {}
+    page = 0
+    page_numbers = 1
 
-    for language in languages:
-        page = 0
-        page_numbers = 1
+    language_vacancies = {
+        "items": [],
+        "vacancies_found": 0
+    }
 
-        languages_vacancies[language] = {
-            "items": [],
-            "vacancies_found": 0
+    while page < page_numbers:
+        params = {
+            "town": '4',
+            "catalogue": 48,
+            "keyword": f"программист {language}",
+            "count": 20,
+            "page": page,
         }
 
-        while page < page_numbers:
-            params = {
-                "town": '4',
-                "catalogue": 48,
-                "keyword": f"программист {language}",
-                "count": 20,
-                "page": page,
-            }
+        response = requests.get(url, headers=auth, params=params)
+        response.raise_for_status()
 
-            response = requests.get(url, headers=auth, params=params)
-            response.raise_for_status()
+        vacancies = response.json()
 
-            vacancies = response.json()
+        page_numbers = vacancies["total"] // 20 + 1
+        page += 1
 
-            page_numbers = vacancies["total"] // 20 + 1
-            page += 1
+        language_vacancies["items"].extend(vacancies["objects"])
+        language_vacancies["vacancies_found"] = vacancies["total"]
 
-            languages_vacancies[language]["items"].extend(vacancies["objects"])
-            languages_vacancies[language]["vacancies_found"] = vacancies["total"]
-
-    return languages_vacancies
+    return language_vacancies
 
 
-def get_salaries_sj(vacancies):
-    salaries = []
+def get_salary_sj(vacancy):
+    currency = vacancy["currency"]
+    salary_from = vacancy["payment_from"]
+    salary_to = vacancy["payment_to"]
 
-    for vacancy in vacancies:
-        currency = vacancy["currency"]
-        salary_from = vacancy["payment_from"]
-        salary_to = vacancy["payment_to"]
+    if not salary_from and not salary_to:
+        return None
 
-        if not salary_from and not salary_to:
-            salaries.append(None)
-            continue
-
-        salaries.append({
-            "currency": currency,
-            "from": salary_from,
-            "to": salary_to,
-        })
-    return salaries
+    salary = {
+        "currency": currency,
+        "from": salary_from,
+        "to": salary_to,
+    }
+    return salary
 
 
-def collect_vacancies_hh(languages):
+def collect_vacancies_hh(language):
     hh_url = "https://api.hh.ru/vacancies/"
-    languages_vacancies = {}
 
-    for language in languages:
-        page = 0
-        pages_number = 1
+    page = 0
+    pages_number = 1
 
-        languages_vacancies[language] = {
-            "items": [],
-            "vacancies_found": 0
+    languages_vacancies = {
+        "items": [],
+        "vacancies_found": 0
+    }
+
+    while page < pages_number:
+        params = {
+            "text": f"программист {language}",
+            "period": 30,
+            "area": 1,
+            "page": page
         }
 
-        while page < pages_number:
-            params = {
-                "text": f"программист {language}",
-                "period": 30,
-                "area": 1,
-                "page": page
-            }
+        response = requests.get(hh_url, params=params)
+        response.raise_for_status()
 
-            response = requests.get(hh_url, params=params)
-            response.raise_for_status()
+        vacancies = response.json()
 
-            vacancies = response.json()
+        languages_vacancies["items"].extend(vacancies["items"])
+        languages_vacancies["vacancies_found"] = vacancies["found"]
 
-            languages_vacancies[language]["items"].extend(vacancies["items"])
-            languages_vacancies[language]["vacancies_found"] = vacancies["found"]
-
-            pages_number = vacancies["pages"]
-            page += 1
+        pages_number = vacancies["pages"]
+        page += 1
 
     return languages_vacancies
 
 
-def get_salaries_hh(vacancies):
-    salaries = []
-    for vacancy in vacancies:
-        vacancy_salary = vacancy["salary"]
-        salaries.append(vacancy_salary)
-    return salaries
+def get_rub_average_salaries(salary):
+    if not salary:
+        return None
 
+    if not salary["currency"] in ("RUR", "rub"):
+        return None
 
-def get_rub_average_salaries(salaries):
-    average_salaries = []
+    if salary["from"] and salary["to"]:
+        return (salary["from"] + salary["to"]) / 2
 
-    for salary in salaries:
-        if not salary:
-            average_salaries.append(None)
-            continue
+    elif not salary["from"]:
+        return ((salary["to"] * 0.8))
 
-        if not salary["currency"] in ("RUR", "rub"):
-            continue
-
-        if salary["from"] and salary["to"]:
-            average_salaries.append((salary["from"] + salary["to"]) / 2)
-
-        elif not salary["from"]:
-            average_salaries.append((salary["to"] * 0.8))
-
-        elif not salary["to"]:
-            average_salaries.append(salary["from"] * 1.2)
-
-    return average_salaries
+    elif not salary["to"]:
+        return (salary["from"] * 1.2)
 
 
 def get_average_salary(salaries):
@@ -148,7 +123,9 @@ def get_average_salary(salaries):
 
 
 def hh_get_salary_by_language(languages):
-    vacancies = collect_vacancies_hh(languages)
+    vacancies = {}
+    for language in languages:
+        vacancies[language] = collect_vacancies_hh(language)
 
     salary_by_languages = {}
 
@@ -157,8 +134,16 @@ def hh_get_salary_by_language(languages):
 
         vacancies_by_language = vacancies[language]["items"]
 
-        salaries = get_salaries_hh(vacancies_by_language)
-        rub_salaries = get_rub_average_salaries(salaries)
+        salaries = []
+        for vacancy in vacancies_by_language:
+            salaries.append(vacancy["salary"])
+
+        rub_salaries = []
+        for salary in salaries:
+            rub_salary = get_rub_average_salaries(salary)
+            if rub_salary:
+                rub_salaries.append(rub_salary)
+
         average_salary, vacancies_processed = get_average_salary(rub_salaries)
 
         salary_by_languages[language] = {
@@ -171,7 +156,9 @@ def hh_get_salary_by_language(languages):
 
 
 def sj_get_salary_by_language(languages, app_id):
-    vacancies = collect_vacancies_sj(languages, app_id)
+    vacancies  = {}
+    for language in languages:
+        vacancies[language] = collect_vacancies_sj(language, app_id)
 
     salary_by_languages = {}
 
@@ -180,8 +167,16 @@ def sj_get_salary_by_language(languages, app_id):
 
         vacancies_by_language = vacancies[language]["items"]
 
-        salaries = get_salaries_sj(vacancies_by_language)
-        rub_salaries = get_rub_average_salaries(salaries)
+        salaries = []
+        for vacancy in vacancies_by_language:
+            salaries.append(get_salary_sj(vacancy))
+
+        rub_salaries = []
+        for salary in salaries:
+            rub_salary = get_rub_average_salaries(salary)
+            if rub_salary:
+                rub_salaries.append(rub_salary)
+
         average_salary, vacancies_processed = get_average_salary(rub_salaries)
 
         salary_by_languages[language] = {
