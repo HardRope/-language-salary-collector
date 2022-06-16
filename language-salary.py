@@ -92,21 +92,20 @@ def collect_vacancies_hh(language):
     return languages_vacancies
 
 
-def get_rub_average_salaries(salary):
-    if not salary:
+def get_rub_average_salaries(salary_from, salary_to, currency):
+    if currency not in ("RUR", "rub"):
+        return None
+    if not salary_from and not salary_to:
         return None
 
-    if not salary["currency"] in ("RUR", "rub"):
-        return None
+    if salary_from and salary_to:
+        return (salary_from + salary_to) / 2
 
-    if salary["from"] and salary["to"]:
-        return (salary["from"] + salary["to"]) / 2
+    elif not salary_from:
+        return salary_to * 0.8
 
-    elif not salary["from"]:
-        return ((salary["to"] * 0.8))
-
-    elif not salary["to"]:
-        return (salary["from"] * 1.2)
+    elif not salary_to:
+        return salary_from * 1.2
 
 
 def get_average_salary(salaries):
@@ -122,7 +121,7 @@ def get_average_salary(salaries):
     return average, counter
 
 
-def hh_get_salary_by_language(languages):
+def get_salary_by_language_hh(languages):
     vacancies = {}
     for language in languages:
         vacancies[language] = collect_vacancies_hh(language)
@@ -140,7 +139,11 @@ def hh_get_salary_by_language(languages):
 
         rub_salaries = []
         for salary in salaries:
-            rub_salary = get_rub_average_salaries(salary)
+            if salary:
+                rub_salary = get_rub_average_salaries(salary["from"], salary["to"], salary["currency"])
+            else:
+                rub_salary = None
+
             if rub_salary:
                 rub_salaries.append(rub_salary)
 
@@ -155,7 +158,7 @@ def hh_get_salary_by_language(languages):
     return salary_by_languages
 
 
-def sj_get_salary_by_language(languages, app_id):
+def get_salary_by_language_sj(languages, app_id):
     vacancies  = {}
     for language in languages:
         vacancies[language] = collect_vacancies_sj(language, app_id)
@@ -173,7 +176,11 @@ def sj_get_salary_by_language(languages, app_id):
 
         rub_salaries = []
         for salary in salaries:
-            rub_salary = get_rub_average_salaries(salary)
+            if salary:
+                rub_salary = get_rub_average_salaries(salary["from"], salary["to"], salary["currency"])
+            else:
+                rub_salary  = None
+
             if rub_salary:
                 rub_salaries.append(rub_salary)
 
@@ -223,8 +230,8 @@ if __name__ == '__main__':
         "go",
     )
 
-    sj_programmer_salaries = sj_get_salary_by_language(programming_languages, sj_app_id)
-    hh_programmer_salaries = hh_get_salary_by_language(programming_languages)
+    sj_programmer_salaries = get_salary_by_language_sj(programming_languages, sj_app_id)
+    hh_programmer_salaries = get_salary_by_language_hh(programming_languages)
 
     print(create_table("HeadHunter Moscow", hh_programmer_salaries, programming_languages))
     print()
