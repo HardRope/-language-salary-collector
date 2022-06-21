@@ -139,13 +139,10 @@ def get_salary_by_language_hh(languages):
 
         rub_salaries = []
         for salary in salaries:
-            if salary:
-                rub_salary = get_rub_average_salaries(salary["from"], salary["to"], salary["currency"])
-            else:
-                rub_salary = None
-
-            if rub_salary:
-                rub_salaries.append(rub_salary)
+            if not salary:
+                continue
+            rub_salary = get_rub_average_salaries(salary["from"], salary["to"], salary["currency"])
+            rub_salaries.append(rub_salary)
 
         average_salary, vacancies_processed = get_average_salary(rub_salaries)
 
@@ -176,13 +173,10 @@ def get_salary_by_language_sj(languages, app_id):
 
         rub_salaries = []
         for salary in salaries:
-            if salary:
-                rub_salary = get_rub_average_salaries(salary["from"], salary["to"], salary["currency"])
-            else:
-                rub_salary  = None
-
-            if rub_salary:
-                rub_salaries.append(rub_salary)
+            if not salary:
+                continue
+            rub_salary = get_rub_average_salaries(salary["from"], salary["to"], salary["currency"])
+            rub_salaries.append(rub_salary)
 
         average_salary, vacancies_processed = get_average_salary(rub_salaries)
 
