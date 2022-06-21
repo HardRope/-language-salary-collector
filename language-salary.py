@@ -43,22 +43,6 @@ def collect_vacancies_sj(language, app_id):
     return language_vacancies
 
 
-def get_salary_sj(vacancy):
-    currency = vacancy["currency"]
-    salary_from = vacancy["payment_from"]
-    salary_to = vacancy["payment_to"]
-
-    if not salary_from and not salary_to:
-        return None
-
-    salary = {
-        "currency": currency,
-        "from": salary_from,
-        "to": salary_to,
-    }
-    return salary
-
-
 def collect_vacancies_hh(language):
     hh_url = "https://api.hh.ru/vacancies/"
 
@@ -165,15 +149,11 @@ def get_salary_by_language_sj(languages, app_id):
 
         vacancies_by_language = vacancies[language]["items"]
 
-        salaries = []
-        for vacancy in vacancies_by_language:
-            salaries.append(get_salary_sj(vacancy))
-
         rub_salaries = []
-        for salary in salaries:
-            if not salary:
+        for vacancy in vacancies_by_language:
+            if not vacancy["payment_from"] and not vacancy["payment_to"]:
                 continue
-            rub_salary = get_rub_average_salaries(salary["from"], salary["to"], salary["currency"])
+            rub_salary = get_rub_average_salaries(vacancy["payment_from"], vacancy["payment_to"], vacancy["currency"])
             rub_salaries.append(rub_salary)
 
         average_salary, vacancies_processed = get_average_salary(rub_salaries)
