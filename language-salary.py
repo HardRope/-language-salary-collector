@@ -95,16 +95,14 @@ def collect_vacancies_hh(language):
 def get_rub_average_salaries(salary_from, salary_to, currency):
     if currency not in ("RUR", "rub"):
         return None
-    if not salary_from and not salary_to:
-        return None
 
     if salary_from and salary_to:
         return (salary_from + salary_to) / 2
 
-    elif not salary_from:
+    if salary_to:
         return salary_to * 0.8
 
-    elif not salary_to:
+    if salary_from:
         return salary_from * 1.2
 
 
